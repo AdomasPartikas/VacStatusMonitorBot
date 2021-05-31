@@ -17,22 +17,25 @@ namespace VacStatus
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
 
+        private readonly string _path = AppDomain.CurrentDomain.BaseDirectory;
+
         public async Task RunAsync()
         {
-
+            
             //Config file
             var json = string.Empty;
 
-            using (var fs = File.OpenRead("config.json"))
+            using (var fs = File.OpenRead(@$"{_path}..\..\..\config.json"))
             using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync().ConfigureAwait(false);
 
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
             //---------
+            
 
             var config = new DiscordConfiguration
             {
-                Token = configJson.Token,
+                //Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Debug
@@ -44,7 +47,7 @@ namespace VacStatus
 
             var commandsConfig = new CommandsNextConfiguration
             {
-                StringPrefixes = new string[] { configJson.Prefix },
+                //StringPrefixes = new string[] { configJson.Prefix },
                 EnableDms = false,
                 EnableMentionPrefix = true,
                 DmHelp = true

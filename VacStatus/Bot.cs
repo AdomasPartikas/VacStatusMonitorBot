@@ -35,7 +35,7 @@ namespace VacStatus
 
             var config = new DiscordConfiguration
             {
-                //Token = configJson.Token,
+                Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Debug
@@ -47,13 +47,14 @@ namespace VacStatus
 
             var commandsConfig = new CommandsNextConfiguration
             {
-                //StringPrefixes = new string[] { configJson.Prefix },
+                StringPrefixes = new string[] { configJson.Prefix },
                 EnableDms = false,
                 EnableMentionPrefix = true,
-                DmHelp = true
+                EnableDefaultHelp = true
             };
 
             await Client.ConnectAsync();
+
             await Task.Delay(-1);
         }
 

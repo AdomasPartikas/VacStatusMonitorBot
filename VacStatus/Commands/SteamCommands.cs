@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using VacStatus.Functionality;
 
 namespace VacStatus.Commands
 {
@@ -24,5 +25,17 @@ namespace VacStatus.Commands
             await ctx.Channel.SendMessageAsync("Pong").ConfigureAwait(false);
         }
         */
+
+        [Command("watch")]
+        [Description("Isduoda rasta informacija ir ideda profili i duombaze.")]
+        public async Task Watch(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
+        {
+            //await ctx.TriggerTypingAsync();
+
+            var steamFunc = new SteamFunctions();
+            var result = steamFunc.MainInfoAndPlayerAdd(url);
+
+            await ctx.Channel.SendMessageAsync(result.Result).ConfigureAwait(false);
+        }
     }
 }

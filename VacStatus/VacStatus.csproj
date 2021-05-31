@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,10 +16,6 @@
     <PackageReference Include="DSharpPlus.VoiceNext" Version="4.0.1" />
     <PackageReference Include="MySql.Data" Version="8.0.25" />
     <PackageReference Include="SteamWebAPI2" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Functionality\" />
   </ItemGroup>
 
 </Project>

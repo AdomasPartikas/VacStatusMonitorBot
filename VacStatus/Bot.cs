@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using VacStatus.Local;
+using VacStatus.Commands;
 
 namespace VacStatus
 {
@@ -22,7 +23,7 @@ namespace VacStatus
         public async Task RunAsync()
         {
             
-            //Config file
+            //Config failo kuriame yra pagrindiniai duomenys konfiguracija
             var json = string.Empty;
 
             using (var fs = File.OpenRead(@$"{_path}..\..\..\config.json"))
@@ -33,6 +34,7 @@ namespace VacStatus
             //---------
             
 
+            //Boto konfiguracija
             var config = new DiscordConfiguration
             {
                 Token = configJson.Token,
@@ -45,6 +47,7 @@ namespace VacStatus
 
             Client.Ready += Client_Ready;
 
+            //Boto pagrindiniu komandu konfiguracija
             var commandsConfig = new CommandsNextConfiguration
             {
                 StringPrefixes = new string[] { configJson.Prefix },
@@ -53,8 +56,16 @@ namespace VacStatus
                 EnableDefaultHelp = true
             };
 
-            await Client.ConnectAsync();
 
+            //Igalinam pagrindines komandas
+            Commands = Client.UseCommandsNext(commandsConfig);
+            //Igalinam Steam komandas
+            Commands.RegisterCommands<SteamCommands>();
+
+
+            //Suteikiame prieeiga prie interneto
+            await Client.ConnectAsync();
+            //Pasakom programai neissijungti kai niekas nevyksta
             await Task.Delay(-1);
         }
 

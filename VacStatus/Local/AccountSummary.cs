@@ -6,6 +6,7 @@ namespace VacStatus.Local
 {
     public class AccountSummary
     {
+        //Laikome viska apie zaideja
         public string SteamId { get; set; }
         public string Nickname { get; set; }
         public string RealName { get; set; }

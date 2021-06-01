@@ -26,6 +26,8 @@ namespace VacStatus.Commands
         }
         */
 
+
+        //Stebejimo funkcija
         [Command("watch")]
         [Description("Isduoda rasta informacija ir ideda profili i duombaze.")]
         public async Task Watch(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
@@ -35,11 +37,62 @@ namespace VacStatus.Commands
             var steamFunc = new SteamFunctions();
             var result = steamFunc.MainInfoAndPlayerAdd(url);
 
+            //Issiunciame pirma rezultata kuris yra esanti informacija apie zaideja
             await ctx.Channel.SendMessageAsync(result.Result.Item1).ConfigureAwait(false);
-            if(result.Result.Item2)
+
+            //Antras rezultatas yra bool tipo, jame yra pasakyta ar zmogus yra duombazeje ar ne
+            if (result.Result.Item2)
                 await ctx.Channel.SendMessageAsync("I'll continue to **monitor** them :yum:").ConfigureAwait(false);
             else
                 await ctx.Channel.SendMessageAsync("This user is **already being monitored**, no need in adding them twice :smile:").ConfigureAwait(false);
+        }
+
+        //Perpatikrinimo funkcija
+        [Command("recheck")]
+        [Description("Patikrina esancius akountus duombazeje.")]
+        public async Task Recheck(CommandContext ctx)
+        {
+            await ctx.TriggerTypingAsync();
+
+            var steamFunc = new SteamFunctions();
+            var recheckResult = steamFunc.Recheck();
+
+            //Issiunciame default zinute kuria modifikuosime
+            var message = await ctx.Channel.SendMessageAsync("`[0/0]` **Loading**").ConfigureAwait(false);
+
+            //Sukuriame laiko string, count int kuris skaiciuos kelintas cia zmogus kuri nuskaitome
+            int count = 0;
+            string currTime = string.Empty;
+
+            //CurrentSuspectCount funkcija kuri suskaiciuoja kiek yra nebanintu zmoniu duombazeje
+            int currCount = steamFunc.CurrentSuspectCount();
+
+
+            foreach (var item in recheckResult)
+            {
+                //Esamas laikas
+                currTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                count++;
+
+                //Modifikuojame default zinute, taip sukuriam effecta kad zinute juda, sioje modifikuotoje zinute idedam zmoniu vardus, skaiciu eileje ir visu zmoniu duombazeje skaiciu
+                await message.ModifyAsync(msg => msg.Content = $"**Rechecking..**  `[{item.Nickname}]`  **[{count}/{currCount}]**").ConfigureAwait(false);
+
+                //Patikriname ar tikrinamo accounto nickname nepasikeite, jei pasikeite pakeiskime duombazeje i dabar esanti
+                await steamFunc.VerifyNicknameChange(item);
+
+                //Jeigu gavo bana israsykime sita zinute, kad sis zmogus dabar yra uzbanintas
+                if (!await steamFunc.DidVacStatusChangeAsync(item.SteamId))
+                {
+                    await ctx.Channel.SendMessageAsync($"> **[{currTime}]**\n" +
+                                                        $"> **SteamId:**  `{item.SteamId}`\n" +
+                                                         $"> **Nickname:**  `{item.Nickname}`\n" +
+                                                          "> Has been  **Banned**  from official matchmaking.").ConfigureAwait(false);
+                }
+            }
+
+            //Pabaigos zinute
+            await ctx.Channel.SendMessageAsync($"`Current user count`  **[{currCount}]**\nI am **finished!** :smiley:").ConfigureAwait(false);
         }
     }
 }

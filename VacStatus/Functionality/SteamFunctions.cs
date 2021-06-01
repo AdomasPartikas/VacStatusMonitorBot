@@ -16,35 +16,43 @@ namespace VacStatus.Functionality
     {
         public async Task<(string,bool)> MainInfoAndPlayerAdd(string url)
         {
+            //Url padarom i steamId
             var steamIdUlong = await UrlIntoUlongAsync(url);
 
+            //Is steamId gaunam apibendrinima
             var summary = await GetSummary(steamIdUlong);
 
+            //Apibendrinima duodam funkcijai kuri idetu i duombaze
             var sql = new MySql();
             var boolResult = sql.AddSuspect(summary);
 
+            //Responsus visus, dideli stringa viena ir boola atiduodam prasytojui
             return (summary.Summary,boolResult);
         }
 
         public async Task<AccountSummary> GetSummary(ulong steamId)
         {
+            //Yes
             var accSummary = new AccountSummary();
 
-            //await ConfigureJsonAsync();
 
+            //Nauja uzklausa internetui
             var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration.jsonConfig.DevKey);
             var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
 
-            //Most of the accounts information is in player summary
+
+            //Most of the accounts information is in player summary so we ask the api to give it to us
             var playerSummaryResponse = await steamInterface.GetPlayerSummaryAsync(steamId);
             var playerSummaryData = playerSummaryResponse.Data;
+
             //Getting community profile data
             var communityProfileData = await steamInterface.GetCommunityProfileAsync(steamId);
-            //What
+
+            //What (ban data)
             var playerBanResponse = await steamInterface.GetPlayerBansAsync(steamId);
             var playerBanData = playerBanResponse.Data;
 
-            //Adding everything to variables who we will transfer
+            //Sudedame viska i grupe (AccountSummary faila Mantai) viska grazinsim prasytojui sios informacijos
             accSummary.SteamId = steamId.ToString();
             accSummary.Nickname = playerSummaryData.Nickname;
             accSummary.RealName = playerSummaryData.RealName;
@@ -58,6 +66,10 @@ namespace VacStatus.Functionality
 
 
             //Creating an indebt summary if the asking party just wants a summary they can write out
+            //Vertimas: kartais funkcijom nereikia detaliu bet jos nori viso summary vienu metu, tsg didelio teksto (pvz: watch komanda)
+            //tai mes sukursim si dideli teksta cia ir idesim i accSummary.Summary kaip viska apibendrinus
+            //tai darydami bus patenkintos visos uzklausos tik su viena funkcija, ji tampa universali
+
             StringBuilder response = new StringBuilder();
 
             response.Append($"**Nickname:** `{playerSummaryData.Nickname}`\n");
@@ -119,6 +131,7 @@ namespace VacStatus.Functionality
             }
 
 
+            //String builderi paverciam i stringa ir atiduodam accSummary kad ji isnestu
             accSummary.Summary = response.ToString();
 
             return accSummary;
@@ -163,6 +176,56 @@ namespace VacStatus.Functionality
 
 
             return result;
+        }
+
+        public List<AccountSummary> Recheck()
+        {
+            //Labai mazai ka daryt cia siai funkcijai bet as nenoriu kad steamCommands liestu mysql
+            var sql = new MySql();
+            var result = sql.Recheck();
+
+            return result;
+        }
+
+        public async Task<bool> DidVacStatusChangeAsync(string steamId)
+        {
+            //Paklausiam steamApi ar sis steamId yra banintas
+            var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration.jsonConfig.DevKey);
+            var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
+
+            var communityProfileData = await steamInterface.GetCommunityProfileAsync(Convert.ToUInt64(steamId));
+
+            if(communityProfileData.IsVacBanned)
+                return true;
+            else
+                return false;
+        }
+
+        public int CurrentSuspectCount()
+        {
+            //Labai mazai ka daryt cia siai funkcijai bet as nenoriu kad steamCommands liestu mysql
+            var sql = new MySql();
+            var result = sql.CurrentPlayerCountInDatabase();
+
+            return result;
+        }
+
+        public async Task VerifyNicknameChange(AccountSummary summary)
+        {
+            //Paklausiam koks nickname'as yra sio steamId
+            var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration.jsonConfig.DevKey);
+            var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
+
+            var playerSummaryResponse = await steamInterface.GetPlayerSummaryAsync(Convert.ToUInt64(summary.SteamId));
+            var playerSummaryData = playerSummaryResponse.Data;
+
+            //Jei jis pasikeites tai pakeiciam duombazeje
+            if (playerSummaryData.Nickname != summary.Nickname)
+            {
+                var sql = new MySql();
+                sql.ChangeNickname(summary.Nickname,playerSummaryData.Nickname);
+                Console.WriteLine($"{summary.Nickname} has changed his nickname to {playerSummaryData.Nickname}");
+            }
         }
     }
 }

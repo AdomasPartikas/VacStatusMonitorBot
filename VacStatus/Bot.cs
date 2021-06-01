@@ -18,26 +18,12 @@ namespace VacStatus
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
 
-        private readonly string _path = AppDomain.CurrentDomain.BaseDirectory;
-
         public async Task RunAsync()
         {
-            
-            //Config failo kuriame yra pagrindiniai duomenys konfiguracija
-            var json = string.Empty;
-
-            using (var fs = File.OpenRead(@$"{_path}..\..\..\config.json"))
-            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                json = await sr.ReadToEndAsync().ConfigureAwait(false);
-
-            var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
-            //---------
-            
-
             //Boto konfiguracija
             var config = new DiscordConfiguration
             {
-                Token = configJson.Token,
+                Token = Configuration.jsonConfig.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Debug
@@ -50,7 +36,7 @@ namespace VacStatus
             //Boto pagrindiniu komandu konfiguracija
             var commandsConfig = new CommandsNextConfiguration
             {
-                StringPrefixes = new string[] { configJson.Prefix },
+                StringPrefixes = new string[] { Configuration.jsonConfig.Prefix },
                 EnableDms = false,
                 EnableMentionPrefix = true,
                 EnableDefaultHelp = true

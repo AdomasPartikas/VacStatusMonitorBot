@@ -30,12 +30,16 @@ namespace VacStatus.Commands
         [Description("Isduoda rasta informacija ir ideda profili i duombaze.")]
         public async Task Watch(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
         {
-            //await ctx.TriggerTypingAsync();
+            await ctx.TriggerTypingAsync();
 
             var steamFunc = new SteamFunctions();
             var result = steamFunc.MainInfoAndPlayerAdd(url);
 
-            await ctx.Channel.SendMessageAsync(result.Result).ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync(result.Result.Item1).ConfigureAwait(false);
+            if(result.Result.Item2)
+                await ctx.Channel.SendMessageAsync("I'll continue to **monitor** them :yum:").ConfigureAwait(false);
+            else
+                await ctx.Channel.SendMessageAsync("This user is **already being monitored**, no need in adding them twice :smile:").ConfigureAwait(false);
         }
     }
 }

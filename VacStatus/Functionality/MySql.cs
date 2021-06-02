@@ -81,20 +81,20 @@ namespace VacStatus.Functionality
         }
 
         //Recheck funkcija kuri istraukia visu neuzbanintu zmoniu vardus ir steamId
-        public List<AccountSummary> Recheck(bool isVacBanned)
+        public List<AccountSummary> Recheck(bool vacBannedAlso)
         {
             List<AccountSummary> columnData = new List<AccountSummary>();
 
             EstablishDatabaseConnection();
 
             var query = string.Empty;
-            if (isVacBanned)
+            if (vacBannedAlso)
             {
-                query = $"SELECT steamid,nickname FROM players";
+                query = $"SELECT steamid,nickname,vacbanned FROM players";
             }
             else
             {
-                query = $"SELECT steamid,nickname FROM players where VacBanned = false";
+                query = $"SELECT steamid,nickname,vacbanned FROM players where VacBanned = false";
             }
 
             using (command = new MySqlCommand(query, connection))
@@ -103,7 +103,7 @@ namespace VacStatus.Functionality
                 {
                     while (reader.Read())
                     {
-                        columnData.Add(new AccountSummary() {SteamId = reader.GetString(0),Nickname = reader.GetString(1) });
+                        columnData.Add(new AccountSummary() {SteamId = reader.GetString(0),Nickname = reader.GetString(1),VacBanned = reader.GetBoolean(2) });
                     }
                 }
             }
@@ -156,6 +156,31 @@ namespace VacStatus.Functionality
             }
 
             connection.Close();
+            GC.Collect();
+        }
+
+        public void DeemSteamIdBanned(string steamId)
+        {
+            EstablishDatabaseConnection();
+
+            string currTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            try
+            {
+                command = new MySqlCommand();
+                command.CommandText = $"UPDATE players SET vacbanned = true, datebanned = '{currTime}' WHERE steamid = '{steamId}';";
+                command.Connection = connection;
+                command.ExecuteNonQuery();
+            }
+            catch (MySqlException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message);
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
+            connection.Close();
+            GC.Collect();
         }
     }
 }

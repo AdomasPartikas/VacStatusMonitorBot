@@ -13,6 +13,8 @@ namespace VacStatus.Commands
     class SteamCommands : BaseCommandModule
     {
         Logger log = new Logger();
+        private static bool monitorActive = false;
+
         //Baselainas kaip veikia zinuciu siuntimas ir atsakymas
         /* 
         [Command("ping")]
@@ -50,6 +52,8 @@ namespace VacStatus.Commands
                 await ctx.Channel.SendMessageAsync("I'll continue to **monitor** them :yum:").ConfigureAwait(false);
             else
                 await ctx.Channel.SendMessageAsync("This user is **already being monitored**, no need in adding them twice :smile:").ConfigureAwait(false);
+
+            GC.Collect();
         }
 
         //Perpatikrinimo funkcija
@@ -100,6 +104,107 @@ namespace VacStatus.Commands
 
             //Pabaigos zinute
             await ctx.Channel.SendMessageAsync($"`Current user count`  **[{currCount}]**\nI am **finished!** :smiley:").ConfigureAwait(false);
+
+            GC.Collect();
+        }
+
+        [Command("watchlist")]
+        [Description("Gives a list of current watched people")]
+        public async Task WatchList(CommandContext ctx)
+        {
+            await ctx.TriggerTypingAsync();
+
+            var steamFunc = new SteamFunctions();
+
+            await ctx.Channel.SendMessageAsync(steamFunc.Watchlist());
+
+            GC.Collect();
+        }
+
+        [Command("monitor")]
+        [Description("Skanuoja specifiniu intervalu visus zmones duombazeje " +
+            "Kas 30min, is duombazes yra istraukiami nebaninti zmones ir patikrinami ar gavo banus. " +
+            "Parasai viena karta isijungia, kita karta issijungia.")]
+        public async Task Monitor(CommandContext ctx)
+        {
+            //Sukuriam trys kintamuosius, vienas laikys starto laika, kitas laikys kito recheck laika ir trecias intervalo ilgi
+            var aTimer = new TimeSpan();
+            var bTimer = new TimeSpan();
+            TimeSpan interval = TimeSpan.FromMinutes(30);
+            aTimer = DateTime.Now.TimeOfDay;
+            bTimer = aTimer.Add(interval);
+
+            //Jeigu monitor mode isjungtas ir pakvieciama si komanda tai monitor mode turetu isijungti, tam sitas if
+            if (!monitorActive)
+            {
+                //Padarom ji aktyvu
+                monitorActive = true;
+
+                //Issiunciam pirma zinute
+                var message = await ctx.Channel.SendMessageAsync($"**Monitor mode:** `Active`\n" +
+                    $"**Next Scan:** `{string.Format("{0:00}:{1:00}", bTimer.Hours, bTimer.Minutes)}`").ConfigureAwait(false);
+
+                //Uzkuriam cikla
+                while (monitorActive)
+                {
+                    //Sukuriam steam funkcijas ir paprasom saraso zmoniu
+                    var steamFunc = new SteamFunctions();
+                    var list = steamFunc.Recheck(false);
+
+                    //Issiunciam default zinute tikrinimo startui parodyt
+                    await message.ModifyAsync(msg => msg.Content = $"**Monitor mode:** `Active`\n" +
+                    $"**Next Scan:** `Now`").ConfigureAwait(false);
+
+                    //Paprasom visu esanciu zmoniu databeise skaiciu, taip pat susikuriam kintamaji kuris skaiciuos kelintas eileje sis zmogus yra
+                    var currCount = steamFunc.CurrentSuspectCount();
+                    int count = 0;
+
+                    //Kiekvienam zmogui esanciam databeise ciklas
+                    foreach (var item in list)
+                    {
+                        count++;
+
+                        //Zinute su zmogaus vardu, kelintas jis sarase
+                        await message.ModifyAsync(msg => msg.Content = $"**Monitor mode:** `Active`\n" +
+                        $"**Next Scan:** `Now`\n" +
+                        $"**Rechecking..**  `[{item.Nickname}]`  **[{count}/{currCount}]**").ConfigureAwait(false);
+
+
+                        //Patikriname ar tikrinamo accounto nickname nepasikeite, jei pasikeite pakeiskime duombazeje i dabar esanti
+                        await steamFunc.VerifyNicknameChange(item);
+                        //Jeigu gavo bana israsykime sita zinute, kad sis zmogus dabar yra uzbanintas
+                        if (await steamFunc.DidVacStatusChangeAsync(item.SteamId))
+                        {
+                            //Ban zinute
+                            var currTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                            await ctx.Channel.SendMessageAsync($"> **[{currTime}]**\n" +
+                                                                $"> **SteamId:**  `{item.SteamId}`\n" +
+                                                                 $"> **Nickname:**  `{item.Nickname}`\n" +
+                                                                  "> Has been  **Banned**  from official matchmaking.").ConfigureAwait(false);
+                        }
+                    }
+
+                    //Po patikrinimo turim suzinoti kito patikrinimo laika, tai dabartini laika pasirasome i aTimer pridedam intervala ir gaunam bTimer
+                    aTimer = DateTime.Now.TimeOfDay;
+                    bTimer = aTimer.Add(interval);
+
+                    //Zinute su kuri pasako kada kitas recheckas
+                    await message.ModifyAsync(msg => msg.Content = $"**Monitor mode:** `Active`\n" +
+                    $"**Next Scan:** `{string.Format("{0:00}:{1:00}", bTimer.Hours, bTimer.Minutes)}`").ConfigureAwait(false);
+
+                    //Uzsaldome taska intervalo laikui
+                    await Task.Delay(Convert.ToInt32(interval.TotalMilliseconds));
+                }
+            }
+            else if (monitorActive)
+            {
+                //Jei monitor mode buvo aktivuotas ir kazkas parase komanda, tada isjunkime monitor mode
+                monitorActive = false;
+                await ctx.Channel.SendMessageAsync($"``Monitor mode:`` **Disabled**").ConfigureAwait(false);
+            }
+
+
+            GC.Collect();
         }
     }
 }

@@ -14,8 +14,12 @@ namespace VacStatus.Functionality
 {
     class SteamFunctions
     {
+        Logger log = new Logger();
+
         public async Task<(string,bool)> MainInfoAndPlayerAdd(string url)
         {
+            log.Log($"Pridedama paskyra", Logger.LogType.Info);
+
             //Url padarom i steamId
             var steamIdUlong = await UrlIntoUlongAsync(url);
 
@@ -61,8 +65,9 @@ namespace VacStatus.Functionality
             accSummary.LastBan = 0;
             accSummary.NumberOfGameBans = 0;
             accSummary.NumberOfVACBans = 0;
-            accSummary.TradeBanState = "None"; 
+            accSummary.TradeBanState = "None";
             //-------
+            log.Log($"[{steamId}][{playerSummaryData.Nickname}] Pridėta prie paskyrų sąrašo.", Logger.LogType.Info);
 
 
             //Creating an indebt summary if the asking party just wants a summary they can write out

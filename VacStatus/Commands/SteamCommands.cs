@@ -1,15 +1,18 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using VacStatus.Functionality;
+using VacStatus.Local;
 
 namespace VacStatus.Commands
 {
     class SteamCommands : BaseCommandModule
     {
+        Logger log = new Logger();
         //Baselainas kaip veikia zinuciu siuntimas ir atsakymas
         /* 
         [Command("ping")]
@@ -32,6 +35,8 @@ namespace VacStatus.Commands
         [Description("Isduoda rasta informacija ir ideda profili i duombaze.")]
         public async Task Watch(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
         {
+            log.Log($"[{ctx.Member}] Panaudota 'Watch' komanda.", Logger.LogType.Info);
+
             await ctx.TriggerTypingAsync();
 
             var steamFunc = new SteamFunctions();
@@ -52,6 +57,8 @@ namespace VacStatus.Commands
         [Description("Patikrina esancius akountus duombazeje.")]
         public async Task Recheck(CommandContext ctx)
         {
+            log.Log($"[{ctx.Member}] Panaudota 'Recheck' komanda.", Logger.LogType.Info);
+
             await ctx.TriggerTypingAsync();
 
             var steamFunc = new SteamFunctions();

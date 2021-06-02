@@ -81,13 +81,21 @@ namespace VacStatus.Functionality
         }
 
         //Recheck funkcija kuri istraukia visu neuzbanintu zmoniu vardus ir steamId
-        public List<AccountSummary> Recheck()
+        public List<AccountSummary> Recheck(bool isVacBanned)
         {
             List<AccountSummary> columnData = new List<AccountSummary>();
 
             EstablishDatabaseConnection();
 
-            string query = "SELECT steamid,nickname FROM players where VacBanned = false";
+            var query = string.Empty;
+            if (isVacBanned)
+            {
+                query = $"SELECT steamid,nickname FROM players";
+            }
+            else
+            {
+                query = $"SELECT steamid,nickname FROM players where VacBanned = false";
+            }
 
             using (command = new MySqlCommand(query, connection))
             {

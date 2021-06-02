@@ -154,9 +154,6 @@ namespace VacStatus.Functionality
             }
             else if (url.Contains("https://steamcommunity.com/id/"))//Jei vanity url yra, tenka prasyti steamapi mums ji isversti ir atiduoti steamid
             {
-                //Konfiguruojamas json failas kad tureti tinkama steam DevKey
-                //await ConfigureJsonAsync();
-
                 //Apkarpomas linkas kad tureti tik vanity nick
                 string vanity = "";
                 vanity = url.Remove(0, 30);
@@ -178,11 +175,11 @@ namespace VacStatus.Functionality
             return result;
         }
 
-        public List<AccountSummary> Recheck()
+        public List<AccountSummary> Recheck(bool isVacBanned)
         {
             //Labai mazai ka daryt cia siai funkcijai bet as nenoriu kad steamCommands liestu mysql
             var sql = new MySql();
-            var result = sql.Recheck();
+            var result = sql.Recheck(isVacBanned);
 
             return result;
         }

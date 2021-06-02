@@ -55,7 +55,7 @@ namespace VacStatus.Commands
             await ctx.TriggerTypingAsync();
 
             var steamFunc = new SteamFunctions();
-            var recheckResult = steamFunc.Recheck();
+            var recheckResult = steamFunc.Recheck(false);
 
             //Issiunciame default zinute kuria modifikuosime
             var message = await ctx.Channel.SendMessageAsync("`[0/0]` **Loading**").ConfigureAwait(false);
@@ -82,7 +82,7 @@ namespace VacStatus.Commands
                 await steamFunc.VerifyNicknameChange(item);
 
                 //Jeigu gavo bana israsykime sita zinute, kad sis zmogus dabar yra uzbanintas
-                if (!await steamFunc.DidVacStatusChangeAsync(item.SteamId))
+                if (await steamFunc.DidVacStatusChangeAsync(item.SteamId))
                 {
                     await ctx.Channel.SendMessageAsync($"> **[{currTime}]**\n" +
                                                         $"> **SteamId:**  `{item.SteamId}`\n" +

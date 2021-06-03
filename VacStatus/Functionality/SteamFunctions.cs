@@ -43,6 +43,7 @@ namespace VacStatus.Functionality
 
             StringBuilder response = new StringBuilder();
 
+            //Įrašoma gauta paviršutinė žaidėjo informacija
             response.Append($"**Nickname:** `{result.Nickname}`\n");
 
             if (result.RealName != null)
@@ -79,19 +80,19 @@ namespace VacStatus.Functionality
             response.Append("**Ban status:**\n");
 
 
-
+            //Įrašoma gauta informacija susijusi su žaidėjo banais
             if (result.LastBan > 0 || result.VacBanned || result.NumberOfGameBans > 0)
             {
-                response.Append($"    **•Vac Banned:** `{result.VacBanned}`\n");
-                response.Append($"    **•Last ban:** `{result.LastBan} days ago`\n");
-                response.Append($"    **•Number of Game Bans:** `{result.NumberOfGameBans}`\n");
-                response.Append($"    **•Number of Vac Bans:** `{result.NumberOfVACBans}`\n");
-                response.Append($"    **•Trade ban state:** `{result.TradeBanState}`\n");
+                response.Append($"    **•Turi vacu?** `{result.VacBanned}`\n");
+                response.Append($"    **•Suagutas lopas:** `ant {result.LastBan} dienu`\n");
+                response.Append($"    **•Zaist ismok:** `{result.NumberOfGameBans}`\n");
+                response.Append($"    **•pabratski kiek vacu?:** `{result.NumberOfVACBans}`\n");
+                response.Append($"    **•Skameris a ne?:** `{result.TradeBanState}`\n");
             }
             else
             {
-                response.Append($"    **•Vac Banned:** `No`\n");
-                response.Append($"    **•Trade ban state:** `{result.TradeBanState}`\n");
+                response.Append($"    **•Turi vacu:** `No`\n");
+                response.Append($"    **•Skameris a ne?:** `{result.TradeBanState}`\n");
             }
             return response.ToString();
         }
@@ -199,7 +200,7 @@ namespace VacStatus.Functionality
             //String builderi paverciam i stringa ir atiduodam accSummary kad ji isnestu
             accSummary.Summary = response.ToString();
 
-            GarbageCollection();
+            GC.Collect();
 
             return accSummary;
         }
@@ -284,13 +285,10 @@ namespace VacStatus.Functionality
             var communityProfileData = await steamInterface.GetCommunityProfileAsync(Convert.ToUInt64(steamId));
 
             if (communityProfileData.IsVacBanned)
-<<<<<<< HEAD
-=======
             {
                 var sql = new MySql();
                 sql.DeemSteamIdBanned(steamId);
 
->>>>>>> origin/master
                 return true;
             }
             else
@@ -323,14 +321,12 @@ namespace VacStatus.Functionality
                 Console.WriteLine($"{summary.Nickname} has changed his nickname to {playerSummaryData.Nickname}");
             }
 
-            GarbageCollection();
-        }
-
-        public void GarbageCollection()
-        {
             GC.Collect();
         }
 
+
+
     }
 }
+
 

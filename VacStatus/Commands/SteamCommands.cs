@@ -207,10 +207,12 @@ namespace VacStatus.Commands
             GC.Collect();
         }
 
+        //Easter egg-as, taip pat stebėjimo funkcija
         [Command("Rajoninis")]
         [Description("gaudo čyterius mano cs mače.")]
         public async Task Rajoninis(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
         {
+            //Loginama informacija
             log.Log($"[{ctx.Member}] Rastas easter egg.", Logger.LogType.Info);
 
             await ctx.TriggerTypingAsync();
@@ -218,10 +220,10 @@ namespace VacStatus.Commands
             var steamFunc = new SteamFunctions();
             var result = steamFunc.MainInfoAndPlayerAdd(url);
 
-            //Issiunciame pirma rezultata kuris yra esanti informacija apie zaideja
+            //Išsiunčia turima info apie žaidėja
             await ctx.Channel.SendMessageAsync(result.Result.Item1).ConfigureAwait(false);
 
-            //Antras rezultatas yra bool tipo, jame yra pasakyta ar zmogus yra duombazeje ar ne
+            //bool rezultatas, kuris tikrina ar jau patikrintas žaidėjas
             if (result.Result.Item2)
                 await ctx.Channel.SendMessageAsync("Vasya toliau stebės").ConfigureAwait(false);
             else

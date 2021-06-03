@@ -11,6 +11,7 @@ namespace VacStatus.Local
         public string Nickname { get; set; }
         public string RealName { get; set; }
         public string MemberSince { get; set; }
+        public string UserStatus { get; set; }
         public string PlayingGameName { get; set; }
         public bool VacBanned { get; set; }
         public uint LastBan { get; set; }

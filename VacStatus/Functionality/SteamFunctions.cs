@@ -16,7 +16,7 @@ namespace VacStatus.Functionality
     {
         Logger log = new Logger();
 
-        public async Task<(string,bool)> MainInfoAndPlayerAdd(string url)
+        public async Task<(string, bool)> MainInfoAndPlayerAdd(string url)
         {
             log.Log($"Pridedama paskyra", Logger.LogType.Info);
 
@@ -31,7 +31,69 @@ namespace VacStatus.Functionality
             var boolResult = sql.AddSuspect(summary);
 
             //Responsus visus, dideli stringa viena ir boola atiduodam prasytojui
-            return (summary.Summary,boolResult);
+            return (summary.Summary, boolResult);
+        }
+
+        public async Task<String> GetRajonas(string url)
+        {
+
+            var steamIdUlong = await UrlIntoUlongAsync(url);
+
+            var result = GetSummary(steamIdUlong).Result;
+
+            StringBuilder response = new StringBuilder();
+
+            response.Append($"**Nickname:** `{result.Nickname}`\n");
+
+            if (result.RealName != null)
+                response.Append($"**Real Name:** `{result.RealName}`\n");
+            else
+                response.Append($"**Real Name:** `Unknown`\n");
+
+
+            response.Append($"**User Status:** `{result.UserStatus}`\n" +
+            $"**SteamId:** `{result.SteamId}`\n");
+
+            response.Append($"**Member since:** `{result.MemberSince}`\n");
+
+
+
+            if (result.PlayingGameName != null)
+                response.Append($"**Currently Playing:** `{result.PlayingGameName}`\n");
+            else
+                response.Append($"**Currently Playing:** `Nothing`\n");
+
+            /*
+            foreach (var item in communityProfileData.MostPlayedGames)
+            {
+                if (item.Name == playerSummaryData.PlayingGameName)
+                {
+                    //response.Append($"  **Game:** `{item.Name}`\n");
+                    response.Append($"    **•Last two weeks:** `{item.HoursPlayed} hours`\n");
+                    response.Append($"    **•Hours on record:** `{item.HoursOnRecord} hours`\n");
+                }
+            }
+            */
+
+
+            response.Append("**Ban status:**\n");
+
+
+
+            if (result.LastBan > 0 || result.VacBanned || result.NumberOfGameBans > 0)
+            {
+                response.Append($"    **•Vac Banned:** `{result.VacBanned}`\n");
+                response.Append($"    **•Last ban:** `{result.LastBan} days ago`\n");
+                response.Append($"    **•Number of Game Bans:** `{result.NumberOfGameBans}`\n");
+                response.Append($"    **•Number of Vac Bans:** `{result.NumberOfVACBans}`\n");
+                response.Append($"    **•Trade ban state:** `{result.TradeBanState}`\n");
+            }
+            else
+            {
+                response.Append($"    **•Vac Banned:** `No`\n");
+                response.Append($"    **•Trade ban state:** `{result.TradeBanState}`\n");
+            }
+            return response.ToString();
         }
 
         public async Task<AccountSummary> GetSummary(ulong steamId)
@@ -67,8 +129,6 @@ namespace VacStatus.Functionality
             accSummary.NumberOfVACBans = 0;
             accSummary.TradeBanState = "None";
             //-------
-            log.Log($"[{steamId}][{playerSummaryData.Nickname}] Pridėta prie paskyrų sąrašo.", Logger.LogType.Info);
-
 
             //Creating an indebt summary if the asking party just wants a summary they can write out
             //Vertimas: kartais funkcijom nereikia detaliu bet jos nori viso summary vienu metu, tsg didelio teksto (pvz: watch komanda)
@@ -114,7 +174,7 @@ namespace VacStatus.Functionality
 
             foreach (var item in playerBanData)
             {
-                if(item.DaysSinceLastBan > 0 || item.VACBanned || item.NumberOfGameBans > 0)
+                if (item.DaysSinceLastBan > 0 || item.VACBanned || item.NumberOfGameBans > 0)
                 {
                     response.Append($"    **•Vac Banned:** `{item.VACBanned}`\n");
                     accSummary.VacBanned = item.VACBanned;
@@ -197,7 +257,7 @@ namespace VacStatus.Functionality
 
             var communityProfileData = await steamInterface.GetCommunityProfileAsync(Convert.ToUInt64(steamId));
 
-            if(communityProfileData.IsVacBanned)
+            if (communityProfileData.IsVacBanned)
                 return true;
             else
                 return false;
@@ -225,9 +285,11 @@ namespace VacStatus.Functionality
             if (playerSummaryData.Nickname != summary.Nickname)
             {
                 var sql = new MySql();
-                sql.ChangeNickname(summary.Nickname,playerSummaryData.Nickname);
+                sql.ChangeNickname(summary.Nickname, playerSummaryData.Nickname);
                 Console.WriteLine($"{summary.Nickname} has changed his nickname to {playerSummaryData.Nickname}");
             }
         }
+
     }
 }
+

@@ -10,6 +10,7 @@ namespace VacStatus.Functionality
     {
         private static MySqlConnection connection;
         private static MySqlCommand command;
+        Logger log = new Logger();
 
         //Funkcija pridedanti zmogu i duombaze
         public bool AddSuspect(AccountSummary summary)
@@ -34,6 +35,8 @@ namespace VacStatus.Functionality
                 }
             }
             connection.Close();
+            log.Log($"[{summary.SteamId}][{summary.Nickname}] Pridėta prie paskyrų sąrašo.", Logger.LogType.Info);
+
             return false;
         }
 

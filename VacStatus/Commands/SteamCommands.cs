@@ -101,5 +101,26 @@ namespace VacStatus.Commands
             //Pabaigos zinute
             await ctx.Channel.SendMessageAsync($"`Current user count`  **[{currCount}]**\nI am **finished!** :smiley:").ConfigureAwait(false);
         }
+
+        [Command("Rajoninis")]
+        [Description("gaudo čyterius mano cs mače.")]
+        public async Task Rajoninis(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
+        {
+            log.Log($"[{ctx.Member}] Rastas easter egg.", Logger.LogType.Info);
+
+            await ctx.TriggerTypingAsync();
+
+            var steamFunc = new SteamFunctions();
+            var result = steamFunc.MainInfoAndPlayerAdd(url);
+
+            //Issiunciame pirma rezultata kuris yra esanti informacija apie zaideja
+            await ctx.Channel.SendMessageAsync(result.Result.Item1).ConfigureAwait(false);
+
+            //Antras rezultatas yra bool tipo, jame yra pasakyta ar zmogus yra duombazeje ar ne
+            if (result.Result.Item2)
+                await ctx.Channel.SendMessageAsync("Vasya toliau stebės").ConfigureAwait(false);
+            else
+                await ctx.Channel.SendMessageAsync("A durns? jau tikrinai sita ciuveli").ConfigureAwait(false);
+        }
     }
 }

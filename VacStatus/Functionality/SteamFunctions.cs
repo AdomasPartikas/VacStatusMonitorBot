@@ -199,6 +199,8 @@ namespace VacStatus.Functionality
             //String builderi paverciam i stringa ir atiduodam accSummary kad ji isnestu
             accSummary.Summary = response.ToString();
 
+            GarbageCollection();
+
             return accSummary;
         }
 
@@ -240,13 +242,37 @@ namespace VacStatus.Functionality
             return result;
         }
 
-        public List<AccountSummary> Recheck(bool isVacBanned)
+        public List<AccountSummary> Recheck(bool vacBannedAlso)
         {
             //Labai mazai ka daryt cia siai funkcijai bet as nenoriu kad steamCommands liestu mysql
             var sql = new MySql();
-            var result = sql.Recheck(isVacBanned);
+            var result = sql.Recheck(vacBannedAlso);
 
             return result;
+        }
+
+        public string Watchlist()
+        {
+            var result = Recheck(true);
+
+            var count = 1;
+            var sb = new StringBuilder();
+
+            sb.Append("```Players on watch list:\n");
+
+            foreach (var item in result)
+            {
+                if (item.VacBanned)
+                    sb.Append($"{count}. [Banned] {item.Nickname}\n");
+                else
+                    sb.Append($"{count}. {item.Nickname}\n");
+
+                count++;
+            }
+
+            sb.Append("```");
+
+            return sb.ToString();
         }
 
         public async Task<bool> DidVacStatusChangeAsync(string steamId)
@@ -258,7 +284,15 @@ namespace VacStatus.Functionality
             var communityProfileData = await steamInterface.GetCommunityProfileAsync(Convert.ToUInt64(steamId));
 
             if (communityProfileData.IsVacBanned)
+<<<<<<< HEAD
+=======
+            {
+                var sql = new MySql();
+                sql.DeemSteamIdBanned(steamId);
+
+>>>>>>> origin/master
                 return true;
+            }
             else
                 return false;
         }
@@ -288,6 +322,13 @@ namespace VacStatus.Functionality
                 sql.ChangeNickname(summary.Nickname, playerSummaryData.Nickname);
                 Console.WriteLine($"{summary.Nickname} has changed his nickname to {playerSummaryData.Nickname}");
             }
+
+            GarbageCollection();
+        }
+
+        public void GarbageCollection()
+        {
+            GC.Collect();
         }
 
     }

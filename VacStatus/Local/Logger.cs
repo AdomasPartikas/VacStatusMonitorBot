@@ -7,11 +7,11 @@ namespace VacStatus.Local
 {
     class Logger
     {
-        private readonly string _path = AppDomain.CurrentDomain.BaseDirectory;
+        private readonly string _path = @$"{AppDomain.CurrentDomain.BaseDirectory}..\..\..\";
 
         public void Log(string message, LogType logType)
         {
-            var fileName = "Log.txt";
+            var fileName = "log.txt";
 
             string logHeader = $"{DateTime.Now}";
 

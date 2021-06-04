@@ -36,7 +36,6 @@ namespace VacStatus.Functionality
 
         public async Task<String> GetRajonas(string url)
         {
-
             var steamIdUlong = await UrlIntoUlongAsync(url);
 
             var result = GetSummary(steamIdUlong).Result;
@@ -44,25 +43,25 @@ namespace VacStatus.Functionality
             StringBuilder response = new StringBuilder();
 
             //Įrašoma gauta paviršutinė žaidėjo informacija
-            response.Append($"**Nickname:** `{result.Nickname}`\n");
+            response.Append($"**numesk nicka:** `{result.Nickname}`\n");
 
             if (result.RealName != null)
-                response.Append($"**Real Name:** `{result.RealName}`\n");
+                response.Append($"**Varda turi?:** `{result.RealName}`\n");
             else
-                response.Append($"**Real Name:** `Unknown`\n");
+                response.Append($"**Varda turi?:** `Unknown`\n");
 
 
-            response.Append($"**User Status:** `{result.UserStatus}`\n" +
-            $"**SteamId:** `{result.SteamId}`\n");
+            response.Append($"**Miegi a ne?:** `{result.UserStatus}`\n" +
+            $"**Numesk numeri:** `{result.SteamId}`\n");
 
-            response.Append($"**Member since:** `{result.MemberSince}`\n");
+            response.Append($"**saikos dalis nuo:** `{result.MemberSince}`\n");
 
 
 
             if (result.PlayingGameName != null)
-                response.Append($"**Currently Playing:** `{result.PlayingGameName}`\n");
+                response.Append($"**Ka losi?:** `{result.PlayingGameName}`\n");
             else
-                response.Append($"**Currently Playing:** `Nothing`\n");
+                response.Append($"**Ka losi?:** `Nothing`\n");
 
             /*
             foreach (var item in communityProfileData.MostPlayedGames)

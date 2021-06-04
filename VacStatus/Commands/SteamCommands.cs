@@ -218,15 +218,15 @@ namespace VacStatus.Commands
             await ctx.TriggerTypingAsync();
 
             var steamFunc = new SteamFunctions();
-            var result = steamFunc.MainInfoAndPlayerAdd(url);
+            var result = steamFunc.GetRajonas(url);
 
             //Išsiunčia turima info apie žaidėja
-            await ctx.Channel.SendMessageAsync(result.Result.Item1).ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync(result.Result).ConfigureAwait(false);
 
             //bool rezultatas, kuris tikrina ar jau patikrintas žaidėjas
-            if (result.Result.Item2)
+            if()
                 await ctx.Channel.SendMessageAsync("Vasya toliau stebės").ConfigureAwait(false);
-            else
+            
                 await ctx.Channel.SendMessageAsync("A durns? jau tikrinai sita ciuveli").ConfigureAwait(false);
         }
     }

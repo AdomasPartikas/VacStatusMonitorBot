@@ -247,5 +247,19 @@ namespace VacStatus.Commands
             await ctx.Channel.SendMessageAsync(result).ConfigureAwait(false);
 
         }
+
+        [Command("remove")]
+        [Description("Removes a player from watchlist")]
+        public async Task Remove(CommandContext ctx, int indexToRemove)
+        {
+            log.Log($"[{ctx.Member}] Panaudota 'Remove' komanda", Logger.LogType.Info);
+
+            await ctx.TriggerTypingAsync();
+
+            var steamFunc = new SteamFunctions();
+            var result = await steamFunc.Remove(indexToRemove);
+
+            await ctx.Channel.SendMessageAsync(result).ConfigureAwait(false);
+        }
     }
 }

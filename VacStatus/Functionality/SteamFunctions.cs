@@ -54,7 +54,7 @@ namespace VacStatus.Functionality
 
             response.Append($"**Miegi a ne?:** `{result.UserStatus}`\n" +
             $"**Numesk numeri:** `{result.SteamId}`\n");
-            
+
 
             response.Append($"**saikos dalis nuo:** `{result.MemberSince}`\n");
 
@@ -397,6 +397,42 @@ namespace VacStatus.Functionality
             //Jeigu nei vienas is ifu nebuvo patenkintas israsom kaip nezinoma klaida
             response = $"Something went **wrong**.";
             return response;
+        }
+
+        public async Task<String> Remove(int indexToRemove)
+        {
+            var list = Recheck(true);
+
+            var currCount = CurrentSuspectCount(true);
+
+            var response = string.Empty;
+
+            if (indexToRemove > currCount)
+            {
+                response = $"Error, **number:** {indexToRemove} does `not` exist.";
+                return response;
+            }
+            else if (indexToRemove <= currCount && indexToRemove > 0)
+            {
+                int index = 0;
+
+                foreach (var item in list)
+                {
+                    index++;
+                    if (index == indexToRemove)
+                    {
+                        var sql = new MySql();
+                        sql.Remove(item.SteamId);
+                        response = $"Success! Player: `{item.Nickname}` has been **removed**!";
+
+                        return response;
+                    }
+                }
+            }
+
+            response = $"Something went **wrong**.";
+            return response;
+
         }
 
     }

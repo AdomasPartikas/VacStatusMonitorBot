@@ -406,7 +406,7 @@ namespace VacStatus.Functionality
             var currCount = CurrentSuspectCount(true);
 
             var response = string.Empty;
-
+            //Išrašoma klaida jeigu įvesto skaičiaus nėra watchliste
             if (indexToRemove > currCount)
             {
                 response = $"Error, **number:** {indexToRemove} does `not` exist.";
@@ -419,6 +419,7 @@ namespace VacStatus.Functionality
                 foreach (var item in list)
                 {
                     index++;
+                    //Išėmamas useris iš watchlisto
                     if (index == indexToRemove)
                     {
                         var sql = new MySql();
@@ -429,7 +430,7 @@ namespace VacStatus.Functionality
                     }
                 }
             }
-
+            //Išrašoma įvykus errorui
             response = $"Something went **wrong**.";
             return response;
 

@@ -118,14 +118,22 @@ namespace VacStatus.Functionality
         }
 
         //Funkcija gaunanti visu neuzbanintu zmoniu skaiciu
-        public int CurrentPlayerCountInDatabase()
+        public int CurrentPlayerCountInDatabase(bool vacBannedAlso)
         {
             EstablishDatabaseConnection();
             object obj;
             try
             {
-                MySqlCommand cmd = new MySqlCommand("select count(*) from players where VacBanned = false", connection);
-                obj = cmd.ExecuteScalar();
+                if (vacBannedAlso)
+                {
+                    MySqlCommand cmd = new MySqlCommand("select count(*) from players", connection);
+                    obj = cmd.ExecuteScalar();
+                }
+                else
+                {
+                    MySqlCommand cmd = new MySqlCommand("select count(*) from players where VacBanned = false", connection);
+                    obj = cmd.ExecuteScalar();
+                }
             }
             catch (MySqlException ex)
             {

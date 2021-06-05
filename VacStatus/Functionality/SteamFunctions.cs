@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SteamWebAPI2;
@@ -53,6 +54,7 @@ namespace VacStatus.Functionality
 
             response.Append($"**Miegi a ne?:** `{result.UserStatus}`\n" +
             $"**Numesk numeri:** `{result.SteamId}`\n");
+            
 
             response.Append($"**saikos dalis nuo:** `{result.MemberSince}`\n");
 
@@ -147,10 +149,11 @@ namespace VacStatus.Functionality
 
             response.Append($"**User Status:** `{playerSummaryData.UserStatus}`\n" +
             $"**SteamId:** `{steamId}`\n");
+            accSummary.UserStatus = playerSummaryData.UserStatus.ToString();
 
             response.Append($"**Member since:** `{communityProfileData.MemberSince}`\n");
 
-
+            accSummary.MemberSince = communityProfileData.MemberSince.ToString();
 
             if (playerSummaryData.PlayingGameName != null)
                 response.Append($"**Currently Playing:** `{playerSummaryData.PlayingGameName}`\n");
@@ -294,11 +297,11 @@ namespace VacStatus.Functionality
                 return false;
         }
 
-        public int CurrentSuspectCount()
+        public int CurrentSuspectCount(bool vacBannedAlso)
         {
             //Labai mazai ka daryt cia siai funkcijai bet as nenoriu kad steamCommands liestu mysql
             var sql = new MySql();
-            var result = sql.CurrentPlayerCountInDatabase();
+            var result = sql.CurrentPlayerCountInDatabase(vacBannedAlso);
 
             return result;
         }
@@ -323,7 +326,78 @@ namespace VacStatus.Functionality
             GC.Collect();
         }
 
+        public async Task<String> Check(string indexToCheck)
+        {
+            //Isgauname sarasa esanciu useriu duombazeje
+            var list = Recheck(true);
+            //Rezultato kintamasis (String)
+            var response = string.Empty;
+            //Paprasome funkcijos visu esanciu zmoniu skaicio
+            var currCount = CurrentSuspectCount(true);
 
+            //Dvi regex patikros, pirma patikrina ar esanti string atrodo kaip steam id, antra patikrina ar esantis string yra tik skaiciai
+            var rx = new Regex(@"^\d{17}$");
+            var skPatikra = new Regex(@"^\d*$");
+
+            //Patikrinam ar strind indexToCheck yra sudarytas tik is skaiciu ar ne
+            if (skPatikra.IsMatch(indexToCheck))
+            {
+                //Jei taip pasidarom int kopija
+                var skaicius = Convert.ToInt32(indexToCheck);
+
+                //Patikrinam ar sis skaicius yra lygiai 17charakteriu ilgumo
+                if (rx.IsMatch(indexToCheck))
+                {
+                    //Jei taip tai reiskia mums duotas steamId, issiunciam ji i getsummary, gaunam rezultata ir returninam
+                    var summary = GetSummary(Convert.ToUInt64(indexToCheck));
+                    response = summary.Result.Summary;
+
+                    return response;
+                }
+                else if (skaicius > currCount)
+                {
+                    //Jei skaicius yra didesnis uz visu zmoniu kieki serveryje taciau ne 17 skaiciu reiskias irasyta klaida, returninam kaip klaida
+                    response = ($"Have you **imputed** a wrong Steam Id?\n" +
+                        $"Or have you **tried** to break me, by giving a non valid list index?\n" +
+                        $"Either way, an **error** has occured.");
+
+                    return response;
+                }
+                else if (skaicius <= currCount && skaicius > 0)
+                {
+                    //Jei skaicius mazesnis uz esamu zmoniu kieki taciau didesnis uz nuli, reiskias sarase turetu buti
+                    int index = 0;
+
+                    //Sukuriam cikla visiems zmoniems ir issitraukiam tik ta kurio praso uzklausos asmuo
+                    foreach (var item in list)
+                    {
+                        index++;
+                        if (index == skaicius)
+                        {
+                            var summary = GetSummary(Convert.ToUInt64(item.SteamId));
+                            response = summary.Result.Summary;
+
+                            return response;
+                        }
+                    }
+                }
+            }
+            else if (indexToCheck.Contains("https://steamcommunity.com/profiles/") || indexToCheck.Contains("https://steamcommunity.com/id/"))
+            {
+                //Taciau jei indexToCheck nera sudarytas tik is skaiciu reiskias bandomas irasyti steam url, patikrinam ar tai tiesa
+                //jeigu taip tada isgaunam ulong is steamurl su esama funkcija ir returninam response
+
+                var steamId = await UrlIntoUlongAsync(indexToCheck);
+                var summary = GetSummary(steamId);
+
+                response = summary.Result.Summary;
+                return response;
+            }
+
+            //Jeigu nei vienas is ifu nebuvo patenkintas israsom kaip nezinoma klaida
+            response = $"Something went **wrong**.";
+            return response;
+        }
 
     }
 }

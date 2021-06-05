@@ -76,7 +76,7 @@ namespace VacStatus.Commands
             string currTime = string.Empty;
 
             //CurrentSuspectCount funkcija kuri suskaiciuoja kiek yra nebanintu zmoniu duombazeje
-            int currCount = steamFunc.CurrentSuspectCount();
+            int currCount = steamFunc.CurrentSuspectCount(false);
 
 
             foreach (var item in recheckResult)
@@ -112,6 +112,8 @@ namespace VacStatus.Commands
         [Description("Gives a list of current watched people")]
         public async Task WatchList(CommandContext ctx)
         {
+            log.Log($"[{ctx.Member}] Panaudota 'Watchlist' komanda.", Logger.LogType.Info);
+
             await ctx.TriggerTypingAsync();
 
             var steamFunc = new SteamFunctions();
@@ -127,6 +129,8 @@ namespace VacStatus.Commands
             "Parasai viena karta isijungia, kita karta issijungia.")]
         public async Task Monitor(CommandContext ctx)
         {
+            log.Log($"[{ctx.Member}] Panaudota 'Monitor' komanda.", Logger.LogType.Info);
+
             //Sukuriam trys kintamuosius, vienas laikys starto laika, kitas laikys kito recheck laika ir trecias intervalo ilgi
             var aTimer = new TimeSpan();
             var bTimer = new TimeSpan();
@@ -156,7 +160,7 @@ namespace VacStatus.Commands
                     $"**Next Scan:** `Now`").ConfigureAwait(false);
 
                     //Paprasom visu esanciu zmoniu databeise skaiciu, taip pat susikuriam kintamaji kuris skaiciuos kelintas eileje sis zmogus yra
-                    var currCount = steamFunc.CurrentSuspectCount();
+                    var currCount = steamFunc.CurrentSuspectCount(false);
                     int count = 0;
 
                     //Kiekvienam zmogui esanciam databeise ciklas
@@ -224,10 +228,24 @@ namespace VacStatus.Commands
             await ctx.Channel.SendMessageAsync(result.Result).ConfigureAwait(false);
 
             //bool rezultatas, kuris tikrina ar jau patikrintas žaidėjas
-            if()
+            
                 await ctx.Channel.SendMessageAsync("Vasya toliau stebės").ConfigureAwait(false);
             
                 await ctx.Channel.SendMessageAsync("A durns? jau tikrinai sita ciuveli").ConfigureAwait(false);
+        }
+
+        [Command("check")]
+        public async Task Check(CommandContext ctx, string indexToCheck)
+        {
+            log.Log($"[{ctx.Member}] Panaudota 'Check' komanda.", Logger.LogType.Info);
+
+            await ctx.TriggerTypingAsync();
+
+            var steamFunc = new SteamFunctions();
+            var result = await steamFunc.Check(indexToCheck);
+
+            await ctx.Channel.SendMessageAsync(result).ConfigureAwait(false);
+
         }
     }
 }

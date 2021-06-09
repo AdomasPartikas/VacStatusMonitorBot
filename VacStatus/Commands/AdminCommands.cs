@@ -16,23 +16,24 @@ namespace VacStatus.Commands
     class AdminCommands : BaseCommandModule
     {
         [Command("clearlist")]
-        [Description("Istrina visa watchlist sarasa.")]
+        [Description("Ištrina visą watchlist sąrašą.")]
         public async Task ClearList(CommandContext ctx)
         {
-            //Zmogus is pradziu parses zinute
+            //Saugomas žmogus kuris iškvietė komandą
             var user = ctx.User;
             var client = ctx.Client;
             var interactivity = client.GetInteractivity();
 
             var roleEmbed = new DiscordEmbedBuilder
             {
-                Title = "Ar esate isitikines?",
-                Description = "Sutikdami istrinsite visa sarasa stebimu zmoniu.",
+                Title = "Ar esate įsitikinęs?",
+                Description = "Sutikdami ištrinsite visą sąraša stebimų žmonių.",
                 Color = DiscordColor.Red
             };
 
             var msg = await ctx.Channel.SendMessageAsync(embed: roleEmbed).ConfigureAwait(false);
 
+            //Emoji naudojami kaip žinutės reakcija
             var confirm = DiscordEmoji.FromName(ctx.Client, ":white_check_mark:");
             var cancel = DiscordEmoji.FromName(ctx.Client, ":x:");
 
@@ -51,6 +52,7 @@ namespace VacStatus.Commands
 
             await Task.Delay(1000);
 
+            //Laikmatis, skaičiuojantis kiek laiko liko atsakyti
             if(result.TimedOut)
             {
                 var deletionEmbed = new DiscordEmbedBuilder
@@ -63,6 +65,7 @@ namespace VacStatus.Commands
 
             if (!result.TimedOut)
             {
+                //Jeigu paspausta nykštys aukštyn, tada visi žmonės ištrinami iš watchlisto
                 if (result.Result.Emoji == confirm)
                 {
 
@@ -72,18 +75,18 @@ namespace VacStatus.Commands
 
                     var deletionEmbed = new DiscordEmbedBuilder
                     {
-                        Title = $"Istrinti {currUsers} zmones",
+                        Title = $"Ištrinti {currUsers} žmonės",
                         Color = DiscordColor.Red
                     };
 
                     await ctx.Channel.SendMessageAsync(embed: deletionEmbed).ConfigureAwait(false);
                 }
-
+                //Jeigu paspausta nykštys žemyn, tada viskas atšaukiama
                 if (result.Result.Emoji == cancel)
                 {
                     var deletionEmbed = new DiscordEmbedBuilder
                     {
-                        Title = "Aborted",
+                        Title = "Atšaukta",
                         Color = DiscordColor.Blue
                     };
                     await ctx.Channel.SendMessageAsync(embed: deletionEmbed).ConfigureAwait(false);

@@ -253,7 +253,7 @@ namespace VacStatus.Functionality
 
             return result;
         }
-
+        //Įdeda žmones į watchlistą
         public string Watchlist()
         {
             var result = Recheck(true);

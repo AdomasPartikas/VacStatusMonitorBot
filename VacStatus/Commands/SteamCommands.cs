@@ -240,7 +240,7 @@ namespace VacStatus.Commands
             log.Log($"[{ctx.Member}] Panaudota 'Check' komanda.", Logger.LogType.Info);
 
             await ctx.TriggerTypingAsync();
-
+            //Patikrina žmogų nepridedant jo į watchlistą
             var steamFunc = new SteamFunctions();
             var result = await steamFunc.Check(indexToCheck);
 
@@ -255,7 +255,7 @@ namespace VacStatus.Commands
             log.Log($"[{ctx.Member}] Panaudota 'Remove' komanda", Logger.LogType.Info);
 
             await ctx.TriggerTypingAsync();
-
+            //Panaikina žmogų iš watchlisto
             var steamFunc = new SteamFunctions();
             var result = await steamFunc.Remove(indexToRemove);
 
@@ -269,6 +269,7 @@ namespace VacStatus.Commands
             log.Log($"[{ctx.Member}] Panaudota 'response' komanda", Logger.LogType.Info);
             var interaktyvumas = ctx.Client.GetInteractivity();
 
+            //Sulaukus komandos botas atrašo tą patį kas buvo parašytą į chatą
             var žinutė = await interaktyvumas.WaitForMessageAsync(m => m.Channel == ctx.Channel).ConfigureAwait(false);
 
             await ctx.Channel.SendMessageAsync(žinutė.Result.Content);
@@ -280,7 +281,7 @@ namespace VacStatus.Commands
         {
             log.Log($"[{ctx.Member}] Panaudota 'respondReaction' komanda", Logger.LogType.Info);
             var interaktyvumas = ctx.Client.GetInteractivity();
-
+            //Nuskaito kokia emoji naudota kaip rekcija žinutės ir ją parašo į chatą
             var žinutė = await interaktyvumas.WaitForReactionAsync(m => m.Channel == ctx.Channel).ConfigureAwait(false);
 
             await ctx.Channel.SendMessageAsync(žinutė.Result.Emoji);
@@ -290,14 +291,15 @@ namespace VacStatus.Commands
         public async Task Role(CommandContext ctx)
         {
             log.Log($"[{ctx.Member}] Panaudota 'role' komanda", Logger.LogType.Info);
+            //Sukuria discord embedą
             var roleEmbed = new DiscordEmbedBuilder
             {
-                Title = "Paspauskite :thumbsup: , kad gauti BotUser rolę",
+                Title = "Paspauskite :thumbsup: , kad gauti rolę",
                 Color = DiscordColor.Blue
             };
 
             var roleŽinutė = await ctx.Channel.SendMessageAsync(embed: roleEmbed).ConfigureAwait(false);
-
+            //Parenkamos naudojamos emoji
             var thumbsUp = DiscordEmoji.FromName(ctx.Client, ":+1:");
                 var thumbsDown = DiscordEmoji.FromName(ctx.Client, ":-1:");
 
@@ -310,10 +312,10 @@ namespace VacStatus.Commands
                 m => m.Message == roleŽinutė &&
                 m.User== ctx.User &&
                 m.Emoji == thumbsUp || m.Emoji == thumbsDown).ConfigureAwait(false);
-
+            //Prideda rolę jeigu sureaguoja su thumbs up emoji
             if(reakcijaResult.Result.Emoji == thumbsUp)
             {
-                var role = ctx.Guild.GetRole(848926587508621313);
+                var role = ctx.Guild.GetRole(852234253525712937);
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
             }
             

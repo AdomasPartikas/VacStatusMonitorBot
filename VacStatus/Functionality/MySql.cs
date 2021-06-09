@@ -215,5 +215,27 @@ namespace VacStatus.Functionality
             connection.Close();
             GC.Collect();
         }
+
+        public void ClearList()
+        {
+            EstablishDatabaseConnection();
+
+            try
+            {
+                command = new MySqlCommand();
+                command.CommandText = $"delete from players;";
+                command.Connection = connection;
+                command.ExecuteNonQuery();
+            }
+            catch (MySqlException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message);
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+
+            connection.Close();
+            GC.Collect();
+        }
     }
 }

@@ -214,9 +214,9 @@ namespace VacStatus.Commands
         }
 
         //Easter egg-as, taip pat stebėjimo funkcija
-        [Command("rajoninis")]
+        [Command("vasya")]
         [Description("gaudo čyterius mano cs mače.")]
-        public async Task Rajoninis(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
+        public async Task Vasya(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
         {
             //Loginama informacija
             log.Log($"[{ctx.Member}] Rastas easter egg.", Logger.LogType.Info);
@@ -231,9 +231,7 @@ namespace VacStatus.Commands
 
             //bool rezultatas, kuris tikrina ar jau patikrintas žaidėjas
             
-                await ctx.Channel.SendMessageAsync("Vasya toliau stebės").ConfigureAwait(false);
-            
-                await ctx.Channel.SendMessageAsync("A durns? jau tikrinai sita ciuveli").ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync("Vasya toliau stebės").ConfigureAwait(false);
         }
 
         [Command("check")]

@@ -56,6 +56,8 @@ namespace VacStatus
             //Igalinam Steam komandas
             Commands.RegisterCommands<SteamCommands>();
 
+            Commands.RegisterCommands<AdminCommands>();
+
 
             //Suteikiame prieeiga prie interneto
             await Client.ConnectAsync();

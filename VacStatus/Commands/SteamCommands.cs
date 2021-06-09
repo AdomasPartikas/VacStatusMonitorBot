@@ -315,7 +315,7 @@ namespace VacStatus.Commands
 
             if(reakcijaResult.Result.Emoji == thumbsUp)
             {
-                var role = ctx.Guild.GetRole(/*roles ID */);
+                var role = ctx.Guild.GetRole(848926587508621313);
                 await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
             }
             

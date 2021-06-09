@@ -1,5 +1,7 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -212,7 +214,7 @@ namespace VacStatus.Commands
         }
 
         //Easter egg-as, taip pat stebėjimo funkcija
-        [Command("Rajoninis")]
+        [Command("rajoninis")]
         [Description("gaudo čyterius mano cs mače.")]
         public async Task Rajoninis(CommandContext ctx, [Description("Pilnas url (https://....) naudotojo kuri norit ideti i duombaze")] string url)
         {
@@ -260,6 +262,64 @@ namespace VacStatus.Commands
             var result = await steamFunc.Remove(indexToRemove);
 
             await ctx.Channel.SendMessageAsync(result).ConfigureAwait(false);
+        }
+        
+        [Command("respond")]
+        [Description("Botas atrašo tą patį, ką parašė useris")]
+        public async Task Response(CommandContext ctx)
+        {
+            log.Log($"[{ctx.Member}] Panaudota 'response' komanda", Logger.LogType.Info);
+            var interaktyvumas = ctx.Client.GetInteractivity();
+
+            var žinutė = await interaktyvumas.WaitForMessageAsync(m => m.Channel == ctx.Channel).ConfigureAwait(false);
+
+            await ctx.Channel.SendMessageAsync(žinutė.Result.Content);
+        }
+
+        [Command("respondReaction")]
+        [Description("Botas atrašo tą patį, ką parašė useris")]
+        public async Task Respondreaction(CommandContext ctx)
+        {
+            log.Log($"[{ctx.Member}] Panaudota 'respondReaction' komanda", Logger.LogType.Info);
+            var interaktyvumas = ctx.Client.GetInteractivity();
+
+            var žinutė = await interaktyvumas.WaitForReactionAsync(m => m.Channel == ctx.Channel).ConfigureAwait(false);
+
+            await ctx.Channel.SendMessageAsync(žinutė.Result.Emoji);
+        }
+
+        [Command("role")]
+        public async Task Role(CommandContext ctx)
+        {
+            log.Log($"[{ctx.Member}] Panaudota 'role' komanda", Logger.LogType.Info);
+            var roleEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Paspauskite :thumbsup: , kad gauti BotUser rolę",
+                Color = DiscordColor.Blue
+            };
+
+            var roleŽinutė = await ctx.Channel.SendMessageAsync(embed: roleEmbed).ConfigureAwait(false);
+
+            var thumbsUp = DiscordEmoji.FromName(ctx.Client, ":+1:");
+                var thumbsDown = DiscordEmoji.FromName(ctx.Client, ":-1:");
+
+            await roleŽinutė.CreateReactionAsync(thumbsUp).ConfigureAwait(false);
+            await roleŽinutė.CreateReactionAsync(thumbsDown).ConfigureAwait(false);
+
+            var interaktyvumas = ctx.Client.GetInteractivity();
+
+            var reakcijaResult = await interaktyvumas.WaitForReactionAsync(
+                m => m.Message == roleŽinutė &&
+                m.User== ctx.User &&
+                m.Emoji == thumbsUp || m.Emoji == thumbsDown).ConfigureAwait(false);
+
+            if(reakcijaResult.Result.Emoji == thumbsUp)
+            {
+                var role = ctx.Guild.GetRole(/*roles ID */);
+                await ctx.Member.GrantRoleAsync(role).ConfigureAwait(false);
+            }
+            
+           
         }
     }
 }

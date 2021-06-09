@@ -170,7 +170,7 @@ namespace VacStatus.Functionality
                     response.Append($"    **•Hours on record:** `{item.HoursOnRecord} hours`\n");
                 }
             }
-
+            
 
             response.Append("**Ban status:**\n");
 

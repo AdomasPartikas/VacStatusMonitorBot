@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using VacStatus.Local;
 using VacStatus.Commands;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 
 namespace VacStatus
 {
@@ -17,6 +19,7 @@ namespace VacStatus
     {
         public DiscordClient Client { get; private set; }
         public CommandsNextExtension Commands { get; private set; }
+        public InteractivityExtension Interactivity { get; private set; }
 
         public async Task RunAsync()
         {
@@ -32,6 +35,11 @@ namespace VacStatus
             Client = new DiscordClient(config);
 
             Client.Ready += Client_Ready;
+
+            Client.UseInteractivity(new InteractivityConfiguration
+            {
+                Timeout = TimeSpan.FromMinutes(1)
+            });
 
             //Boto pagrindiniu komandu konfiguracija
             var commandsConfig = new CommandsNextConfiguration

@@ -25,6 +25,9 @@ namespace VacStatus.Functionality
                     MySqlCommand cmd = new MySqlCommand($"INSERT INTO players (Nickname, SteamId, VacBanned, DateAdded) values ('{summary.Nickname}', '{summary.SteamId}', {summary.VacBanned}, '{currTime}');", connection);
                     cmd.ExecuteNonQuery();
                     connection.Close();
+
+                    log.Log($"[{summary.SteamId}][{summary.Nickname}] Paskyra prideta sekmingai.", Logger.LogType.Info);
+
                     return true;
                 }
                 catch (MySqlException ex)
@@ -32,10 +35,11 @@ namespace VacStatus.Functionality
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(ex.Message);
                     Console.ForegroundColor = ConsoleColor.White;
+
+                    log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
                 }
             }
             connection.Close();
-            log.Log($"[{summary.SteamId}][{summary.Nickname}] Pridėta prie paskyrų sąrašo.", Logger.LogType.Info);
 
             return false;
         }
@@ -53,6 +57,7 @@ namespace VacStatus.Functionality
                 }
                 else
                 {
+                    log.Log($"[{steamId}] Paskyra rasta duombazeje", Logger.LogType.Warn);
                     return true;
                 }
             }
@@ -61,6 +66,9 @@ namespace VacStatus.Functionality
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex.Message);
                 Console.ForegroundColor = ConsoleColor.White;
+
+                log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
+
                 return true;
             }
         }
@@ -80,12 +88,16 @@ namespace VacStatus.Functionality
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex.Message);
                 Console.ForegroundColor = ConsoleColor.White;
+
+                log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
             }
         }
 
         //Recheck funkcija kuri istraukia visu neuzbanintu zmoniu vardus ir steamId
         public List<AccountSummary> Recheck(bool vacBannedAlso)
         {
+            log.Log($"Gaunamas profiliu sarasas.", Logger.LogType.Info);
+
             List<AccountSummary> columnData = new List<AccountSummary>();
 
             EstablishDatabaseConnection();
@@ -141,6 +153,8 @@ namespace VacStatus.Functionality
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex.Message);
                 Console.ForegroundColor = ConsoleColor.White;
+
+                log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
             }
             connection.Close();
             return Convert.ToInt32(obj);
@@ -158,12 +172,16 @@ namespace VacStatus.Functionality
                 command.CommandText = $"UPDATE players SET nickname ='{currentNickname}' WHERE nickname = '{nicknameInDatabase}';";
                 command.Connection = connection;
                 command.ExecuteNonQuery();
+
+                log.Log($"[{nicknameInDatabase}] Keiciamas vardas i [{currentNickname}]", Logger.LogType.Info);
             }
             catch (MySqlException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex.Message);
                 Console.ForegroundColor = ConsoleColor.White;
+
+                log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
             }
 
             connection.Close();
@@ -172,6 +190,8 @@ namespace VacStatus.Functionality
 
         public void DeemSteamIdBanned(string steamId)
         {
+            log.Log($"Keiciamas [{steamId}] statusas i BANNED", Logger.LogType.Info);
+
             EstablishDatabaseConnection();
 
             string currTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -188,6 +208,8 @@ namespace VacStatus.Functionality
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex.Message);
                 Console.ForegroundColor = ConsoleColor.White;
+
+                log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
             }
 
             connection.Close();
@@ -204,12 +226,16 @@ namespace VacStatus.Functionality
                 command.CommandText = $"delete from players where steamid = '{steamId}';";
                 command.Connection = connection;
                 command.ExecuteNonQuery();
+
+                log.Log($"[{steamId}] Sekmingai istrintas.", Logger.LogType.Info);
             }
             catch (MySqlException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex.Message);
                 Console.ForegroundColor = ConsoleColor.White;
+
+                log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
             }
 
             connection.Close();
@@ -226,12 +252,17 @@ namespace VacStatus.Functionality
                 command.CommandText = $"delete from players;";
                 command.Connection = connection;
                 command.ExecuteNonQuery();
+
+                log.Log($"Visos duombazes paskyros sekmingai istrintos.", Logger.LogType.Info);
+                log.Log($"------------------END------------------", Logger.LogType.Info);
             }
             catch (MySqlException ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex.Message);
                 Console.ForegroundColor = ConsoleColor.White;
+
+                log.Log($"MySqlError: [{ex.Message}]", Logger.LogType.Error);
             }
 
             connection.Close();

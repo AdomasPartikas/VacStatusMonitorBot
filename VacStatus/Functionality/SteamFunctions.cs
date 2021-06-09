@@ -19,13 +19,15 @@ namespace VacStatus.Functionality
 
         public async Task<(string, bool)> MainInfoAndPlayerAdd(string url)
         {
-            log.Log($"Pridedama paskyra", Logger.LogType.Info);
-
             //Url padarom i steamId
             var steamIdUlong = await UrlIntoUlongAsync(url);
 
+            log.Log($"[{steamIdUlong}] Analizuojama paskyra", Logger.LogType.Info);
+
             //Is steamId gaunam apibendrinima
             var summary = await GetSummary(steamIdUlong);
+
+            log.Log($"[{steamIdUlong}] Paskyros duomenys sekmingai gauti.", Logger.LogType.Info);
 
             //Apibendrinima duodam funkcijai kuri idetu i duombaze
             var sql = new MySql();
@@ -100,6 +102,8 @@ namespace VacStatus.Functionality
 
         public async Task<AccountSummary> GetSummary(ulong steamId)
         {
+            log.Log($"[{steamId}] Gaunama informacija", Logger.LogType.Info);
+
             //Yes
             var accSummary = new AccountSummary();
 
@@ -253,9 +257,12 @@ namespace VacStatus.Functionality
 
             return result;
         }
-        //Įdeda žmones į watchlistą
+
+        //Sukuria lista
         public string Watchlist()
         {
+            log.Log($"Kuriamas sarasas.", Logger.LogType.Info);
+
             var result = Recheck(true);
 
             var count = 1;
@@ -328,12 +335,16 @@ namespace VacStatus.Functionality
 
         public async Task<String> Check(string indexToCheck)
         {
+            log.Log($"Tikrinamas indeksas [{indexToCheck}]", Logger.LogType.Info);
+
             //Isgauname sarasa esanciu useriu duombazeje
             var list = Recheck(true);
             //Rezultato kintamasis (String)
             var response = string.Empty;
             //Paprasome funkcijos visu esanciu zmoniu skaicio
             var currCount = CurrentSuspectCount(true);
+
+            log.Log($"[{currCount}] Profiliu duombazeje.", Logger.LogType.Info);
 
             //Dvi regex patikros, pirma patikrina ar esanti string atrodo kaip steam id, antra patikrina ar esantis string yra tik skaiciai
             var rx = new Regex(@"^\d{17}$");
@@ -348,6 +359,8 @@ namespace VacStatus.Functionality
                 //Patikrinam ar sis skaicius yra lygiai 17charakteriu ilgumo
                 if (rx.IsMatch(indexToCheck))
                 {
+                    log.Log($"Ivestas duomuo rastas kaip steamId [{indexToCheck}]", Logger.LogType.Info);
+
                     //Jei taip tai reiskia mums duotas steamId, issiunciam ji i getsummary, gaunam rezultata ir returninam
                     var summary = GetSummary(Convert.ToUInt64(indexToCheck));
                     response = summary.Result.Summary;
@@ -356,6 +369,8 @@ namespace VacStatus.Functionality
                 }
                 else if (skaicius > currCount)
                 {
+                    log.Log($"Indeksas: [{indexToCheck}] neegzistuoja", Logger.LogType.Error);
+
                     //Jei skaicius yra didesnis uz visu zmoniu kieki serveryje taciau ne 17 skaiciu reiskias irasyta klaida, returninam kaip klaida
                     response = ($"Have you **imputed** a wrong Steam Id?\n" +
                         $"Or have you **tried** to break me, by giving a non valid list index?\n" +
@@ -395,21 +410,27 @@ namespace VacStatus.Functionality
             }
 
             //Jeigu nei vienas is ifu nebuvo patenkintas israsom kaip nezinoma klaida
+            log.Log($"Indeksas: [{indexToCheck}] sukele nezinomu klaidu", Logger.LogType.Error);
             response = $"Something went **wrong**.";
             return response;
         }
 
         public async Task<String> Remove(int indexToRemove)
         {
+            log.Log($"Tikrinamas indeksas [{indexToRemove}]", Logger.LogType.Info);
+
             var list = Recheck(true);
 
             var currCount = CurrentSuspectCount(true);
+
+            log.Log($"[{currCount}] Profiliu duombazeje.", Logger.LogType.Info);
 
             var response = string.Empty;
             //Išrašoma klaida jeigu įvesto skaičiaus nėra watchliste
             if (indexToRemove > currCount)
             {
                 response = $"Error, **number:** {indexToRemove} does `not` exist.";
+                log.Log($"Indeksas: [{indexToRemove}] neegzistuoja", Logger.LogType.Error);
                 return response;
             }
             else if (indexToRemove <= currCount && indexToRemove > 0)
@@ -430,6 +451,7 @@ namespace VacStatus.Functionality
                     }
                 }
             }
+            log.Log($"Indeksas: [{indexToRemove}] sukele nezinomu klaidu", Logger.LogType.Error);
             //Išrašoma įvykus errorui
             response = $"Something went **wrong**.";
             return response;

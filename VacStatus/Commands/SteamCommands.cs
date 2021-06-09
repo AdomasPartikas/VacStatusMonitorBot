@@ -55,6 +55,8 @@ namespace VacStatus.Commands
             else
                 await ctx.Channel.SendMessageAsync("This user is **already being monitored**, no need in adding them twice :smile:").ConfigureAwait(false);
 
+            log.Log($"------------------END------------------", Logger.LogType.Info);
+
             GC.Collect();
         }
 
@@ -91,6 +93,8 @@ namespace VacStatus.Commands
                 //Modifikuojame default zinute, taip sukuriam effecta kad zinute juda, sioje modifikuotoje zinute idedam zmoniu vardus, skaiciu eileje ir visu zmoniu duombazeje skaiciu
                 await message.ModifyAsync(msg => msg.Content = $"**Rechecking..**  `[{item.Nickname}]`  **[{count}/{currCount}]**").ConfigureAwait(false);
 
+                log.Log($"[{item.SteamId}] Tikrinamas", Logger.LogType.Info);
+
                 //Patikriname ar tikrinamo accounto nickname nepasikeite, jei pasikeite pakeiskime duombazeje i dabar esanti
                 await steamFunc.VerifyNicknameChange(item);
 
@@ -101,17 +105,23 @@ namespace VacStatus.Commands
                                                         $"> **SteamId:**  `{item.SteamId}`\n" +
                                                          $"> **Nickname:**  `{item.Nickname}`\n" +
                                                           "> Has been  **Banned**  from official matchmaking.").ConfigureAwait(false);
+
+                    log.Log($"[{item.SteamId}] [{item.Nickname}] Buvo uzbanintas.", Logger.LogType.Ban);
                 }
             }
 
             //Pabaigos zinute
             await ctx.Channel.SendMessageAsync($"`Current user count`  **[{currCount}]**\nI am **finished!** :smiley:").ConfigureAwait(false);
+            log.Log($"[{currCount}] Profiliu duombazeje.", Logger.LogType.Info);
+
+
+            log.Log($"------------------END------------------", Logger.LogType.Info);
 
             GC.Collect();
         }
 
         [Command("watchlist")]
-        [Description("Gives a list of current watched people")]
+        [Description("Duoda sarasa esanciu profiliu duombazeje")]
         public async Task WatchList(CommandContext ctx)
         {
             log.Log($"[{ctx.Member}] Panaudota 'Watchlist' komanda.", Logger.LogType.Info);
@@ -122,6 +132,8 @@ namespace VacStatus.Commands
 
             await ctx.Channel.SendMessageAsync(steamFunc.Watchlist());
 
+
+            log.Log($"------------------END------------------", Logger.LogType.Info);
             GC.Collect();
         }
 
@@ -131,7 +143,6 @@ namespace VacStatus.Commands
             "Parasai viena karta isijungia, kita karta issijungia.")]
         public async Task Monitor(CommandContext ctx)
         {
-            log.Log($"[{ctx.Member}] Panaudota 'Monitor' komanda.", Logger.LogType.Info);
 
             //Sukuriam trys kintamuosius, vienas laikys starto laika, kitas laikys kito recheck laika ir trecias intervalo ilgi
             var aTimer = new TimeSpan();
@@ -143,6 +154,8 @@ namespace VacStatus.Commands
             //Jeigu monitor mode isjungtas ir pakvieciama si komanda tai monitor mode turetu isijungti, tam sitas if
             if (!monitorActive)
             {
+                log.Log($"[{ctx.Member}] Ijunge 'Monitor' rezima.", Logger.LogType.Info);
+
                 //Padarom ji aktyvu
                 monitorActive = true;
 
@@ -153,6 +166,8 @@ namespace VacStatus.Commands
                 //Uzkuriam cikla
                 while (monitorActive)
                 {
+                    log.Log($"[Sistema] Paprase 'Recheck' komandos.", Logger.LogType.Info);
+
                     //Sukuriam steam funkcijas ir paprasom saraso zmoniu
                     var steamFunc = new SteamFunctions();
                     var list = steamFunc.Recheck(false);
@@ -175,6 +190,7 @@ namespace VacStatus.Commands
                         $"**Next Scan:** `Now`\n" +
                         $"**Rechecking..**  `[{item.Nickname}]`  **[{count}/{currCount}]**").ConfigureAwait(false);
 
+                        log.Log($"[{item.SteamId}] Tikrinamas", Logger.LogType.Info);
 
                         //Patikriname ar tikrinamo accounto nickname nepasikeite, jei pasikeite pakeiskime duombazeje i dabar esanti
                         await steamFunc.VerifyNicknameChange(item);
@@ -187,6 +203,8 @@ namespace VacStatus.Commands
                                                                 $"> **SteamId:**  `{item.SteamId}`\n" +
                                                                  $"> **Nickname:**  `{item.Nickname}`\n" +
                                                                   "> Has been  **Banned**  from official matchmaking.").ConfigureAwait(false);
+
+                            log.Log($"[{item.SteamId}] [{item.Nickname}] Buvo uzbanintas.", Logger.LogType.Ban);
                         }
                     }
 
@@ -198,17 +216,22 @@ namespace VacStatus.Commands
                     await message.ModifyAsync(msg => msg.Content = $"**Monitor mode:** `Active`\n" +
                     $"**Next Scan:** `{string.Format("{0:00}:{1:00}", bTimer.Hours, bTimer.Minutes)}`").ConfigureAwait(false);
 
+                    log.Log($"[Sistema] Kitas skanavimas [{string.Format("{0:00}:{1:00}", bTimer.Hours, bTimer.Minutes)}]", Logger.LogType.Info);
+
                     //Uzsaldome taska intervalo laikui
                     await Task.Delay(Convert.ToInt32(interval.TotalMilliseconds));
                 }
             }
             else if (monitorActive)
             {
+                log.Log($"[{ctx.Member}] Isjunge 'Monitor' rezima.", Logger.LogType.Info);
+
                 //Jei monitor mode buvo aktivuotas ir kazkas parase komanda, tada isjunkime monitor mode
                 monitorActive = false;
                 await ctx.Channel.SendMessageAsync($"``Monitor mode:`` **Disabled**").ConfigureAwait(false);
             }
 
+            log.Log($"------------------END------------------", Logger.LogType.Info);
 
             GC.Collect();
         }
@@ -232,34 +255,40 @@ namespace VacStatus.Commands
             //bool rezultatas, kuris tikrina ar jau patikrintas žaidėjas
             
             await ctx.Channel.SendMessageAsync("Vasya toliau stebės").ConfigureAwait(false);
+
+            log.Log($"------------------END------------------", Logger.LogType.Info);
         }
 
         [Command("check")]
-        public async Task Check(CommandContext ctx, string indexToCheck)
+        [Description("Patikrina žmogų nepridedant jo į watchlistą.")]
+        public async Task Check(CommandContext ctx,[Description("Gali buti url, steamId, arba saraso numeris kuri gaunate is watchlist")] string indexToCheck)
         {
             log.Log($"[{ctx.Member}] Panaudota 'Check' komanda.", Logger.LogType.Info);
 
             await ctx.TriggerTypingAsync();
-            //Patikrina žmogų nepridedant jo į watchlistą
+
             var steamFunc = new SteamFunctions();
             var result = await steamFunc.Check(indexToCheck);
 
             await ctx.Channel.SendMessageAsync(result).ConfigureAwait(false);
 
+            log.Log($"------------------END------------------", Logger.LogType.Info);
         }
 
         [Command("remove")]
-        [Description("Removes a player from watchlist")]
-        public async Task Remove(CommandContext ctx, int indexToRemove)
+        [Description("Panaikina žmogų iš watchlisto")]
+        public async Task Remove(CommandContext ctx, [Description("Saraso numeris kuri gaunate is watchlist.")] int indexToRemove)
         {
             log.Log($"[{ctx.Member}] Panaudota 'Remove' komanda", Logger.LogType.Info);
 
             await ctx.TriggerTypingAsync();
-            //Panaikina žmogų iš watchlisto
+
             var steamFunc = new SteamFunctions();
             var result = await steamFunc.Remove(indexToRemove);
 
             await ctx.Channel.SendMessageAsync(result).ConfigureAwait(false);
+
+            log.Log($"------------------END------------------", Logger.LogType.Info);
         }
         
         [Command("respond")]
@@ -267,12 +296,15 @@ namespace VacStatus.Commands
         public async Task Response(CommandContext ctx)
         {
             log.Log($"[{ctx.Member}] Panaudota 'response' komanda", Logger.LogType.Info);
+
             var interaktyvumas = ctx.Client.GetInteractivity();
 
             //Sulaukus komandos botas atrašo tą patį kas buvo parašytą į chatą
             var žinutė = await interaktyvumas.WaitForMessageAsync(m => m.Channel == ctx.Channel).ConfigureAwait(false);
 
             await ctx.Channel.SendMessageAsync(žinutė.Result.Content);
+
+            log.Log($"------------------END------------------", Logger.LogType.Info);
         }
 
         [Command("respondReaction")]
@@ -280,17 +312,21 @@ namespace VacStatus.Commands
         public async Task Respondreaction(CommandContext ctx)
         {
             log.Log($"[{ctx.Member}] Panaudota 'respondReaction' komanda", Logger.LogType.Info);
+
             var interaktyvumas = ctx.Client.GetInteractivity();
             //Nuskaito kokia emoji naudota kaip rekcija žinutės ir ją parašo į chatą
             var žinutė = await interaktyvumas.WaitForReactionAsync(m => m.Channel == ctx.Channel).ConfigureAwait(false);
 
             await ctx.Channel.SendMessageAsync(žinutė.Result.Emoji);
+
+            log.Log($"------------------END------------------", Logger.LogType.Info);
         }
 
         [Command("role")]
         public async Task Role(CommandContext ctx)
         {
             log.Log($"[{ctx.Member}] Panaudota 'role' komanda", Logger.LogType.Info);
+
             //Sukuria discord embedą
             var roleEmbed = new DiscordEmbedBuilder
             {

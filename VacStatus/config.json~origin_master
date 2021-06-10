@@ -4,3 +4,4 @@
   "devKey": "",
   "mysqlConnection": "Server=<>;Database=<>;Uid=<>;Pwd=<>;"
 }
+//Rename file to config.json
